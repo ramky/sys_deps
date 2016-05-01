@@ -31,8 +31,13 @@ class DependencyProcessor
     when 'LIST'
       list
     when 'END'
-      #NOOP
+      add_to_output('END')
     end
+  end
+
+  def add_to_output(message)
+    output_text = message + "\n"
+    @output << output_text
   end
 
   def add_dependency(items)
@@ -44,39 +49,69 @@ class DependencyProcessor
 
   def install(item)
     output_text = "INSTALL #{item}\n"
+    if already_installed?(item)
+      output_text  += "  #{item} is already installed\n"
+      @output << output_text
+      return
+    end
     # should refactor to a method
     if @hash.has_key?(item)
         @hash[item].each do |it|
-          next if @installed_items.has_key?(it) # clean this up?
-          output_text += "\t Installing #{it}\n"
-          @installed_items[it] = 1
+          output_text += "  Installing #{it}\n" unless already_installed?(it)
+          mark_as_installed(it)
         end
     end
-    output_text += "\t Installing #{item}\n"
-    @installed_items[item] = 1
+    output_text += "  Installing #{item}\n"
+    mark_as_installed(item)
     @output << output_text
+  end
+
+  def mark_as_installed(item)
+    @installed_items[item] = (
+      @installed_items[item].nil? ? 1 : @installed_items[item] + 1
+    )
+  end
+
+  def mark_as_uninstalled(item)
+    if @installed_items.has_key?(item)
+      if @installed_items[item] > 1
+        @installed_items[item] = @installed_items[item] - 1
+      elsif @installed_items[item] == 1
+        @installed_items.delete(item)
+      end
+    end
   end
 
   def remove(item)
     output_text = "REMOVE #{item}\n"
+
+    unless @installed_items.has_key?(item)
+      output_text += "  #{item} is not installed\n"
+      return
+    end
+
     unless okay_to_remove?(item)
-      output_text += "\t #{item} is still needed\n"
+      output_text += "  #{item} is still needed\n"
     else
-      output_text += "\t Removing #{item}\n"
+      output_text += "  Removing #{item}\n"
       # should refactor to a method
       if @hash.has_key?(item)
         @hash[item].each do |it|
-          output_text += "\t Removing #{it}\n"
+          if @installed_items[it] == 1
+            output_text += "  Removing #{it}\n"
+          end
+          mark_as_uninstalled(it)
         end
         @hash.delete(item)
+        mark_as_uninstalled(item)
       end
     end
     @output << output_text
   end
 
   def list
-    output_text = "LIST\n"
-    output_text += @hash.keys.join("\n")
+    output_text = "LIST\n  "
+    output_text += @installed_items.keys.join("\n  ")
     @output << output_text
   end
 
@@ -89,5 +124,9 @@ class DependencyProcessor
       end
     end
     okay
+  end
+
+  def already_installed?(item)
+    @installed_items.has_key?(item)
   end
 end
