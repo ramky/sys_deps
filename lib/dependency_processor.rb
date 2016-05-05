@@ -55,27 +55,31 @@ class DependencyProcessor
   def add_dependency(items)
     depends_on = items.slice(1, items.length)
     @dependencies[items.first] = depends_on
-    output_text = 'DEPEND ' + items.join(' ') + "\n"
-    @output << output_text
+    add_to_output('DEPEND ' + items.join(' '))
   end
 
   def install(item)
     output_text = "INSTALL #{item}\n"
     if already_installed?(item)
-      output_text  += "  #{item} is already installed\n"
-      @output << output_text
+      output_text += "  #{item} is already installed"
+      add_to_output(output_text)
       return
     end
-    # should refactor to a method
+
+    install_dependencies(item, output_text)
+
+    mark_as_installed(item)
+  end
+
+  def install_dependencies(item, output_text)
     if @dependencies.has_key?(item)
         @dependencies[item].each do |it|
           output_text += "  Installing #{it}\n" unless already_installed?(it)
           mark_as_installed(it)
         end
     end
-    output_text += "  Installing #{item}\n"
-    mark_as_installed(item)
-    @output << output_text
+    output_text += "  Installing #{item}"
+    add_to_output(output_text)
   end
 
   def mark_as_installed(item)
