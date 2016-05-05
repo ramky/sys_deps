@@ -1,19 +1,31 @@
 class DependencyProcessor
-  attr_reader :input, :output
+  attr_reader :reader, :input, :output, :dependencies
 
   def initialize(path)
-    reader = FileReader.new(path)
-    @input = reader.read_file
-    @hash = {}
+    @reader = FileReader.new(path)
+    @dependencies = {}
     @output = []
     @installed_items = {}
   end
 
+  def set_input_from_file
+    @input = read_file
+  end
+
+  def read_file
+    reader.read_file
+  end
+
   def process
+    set_input_from_file
     input.lines.each do |line|
       process_line(line)
     end
-    @output
+    #require 'pry'; binding.pry
+  end
+
+  def print_output
+    puts output.join('')
   end
 
   def process_line(line)
@@ -42,7 +54,7 @@ class DependencyProcessor
 
   def add_dependency(items)
     depends_on = items.slice(1, items.length)
-    @hash[items.first] = depends_on
+    @dependencies[items.first] = depends_on
     output_text = 'DEPEND ' + items.join(' ') + "\n"
     @output << output_text
   end
@@ -55,8 +67,8 @@ class DependencyProcessor
       return
     end
     # should refactor to a method
-    if @hash.has_key?(item)
-        @hash[item].each do |it|
+    if @dependencies.has_key?(item)
+        @dependencies[item].each do |it|
           output_text += "  Installing #{it}\n" unless already_installed?(it)
           mark_as_installed(it)
         end
@@ -87,6 +99,7 @@ class DependencyProcessor
 
     unless @installed_items.has_key?(item)
       output_text += "  #{item} is not installed\n"
+      @output << output_text
       return
     end
 
@@ -95,14 +108,14 @@ class DependencyProcessor
     else
       output_text += "  Removing #{item}\n"
       # should refactor to a method
-      if @hash.has_key?(item)
-        @hash[item].each do |it|
+      if @dependencies.has_key?(item)
+        @dependencies[item].each do |it|
           if @installed_items[it] == 1
             output_text += "  Removing #{it}\n"
           end
           mark_as_uninstalled(it)
         end
-        @hash.delete(item)
+        @dependencies.delete(item)
         mark_as_uninstalled(item)
       end
     end
@@ -112,12 +125,13 @@ class DependencyProcessor
   def list
     output_text = "LIST\n  "
     output_text += @installed_items.keys.join("\n  ")
+    output_text += "\n"
     @output << output_text
   end
 
   def okay_to_remove?(item)
     okay = true
-    @hash.values.each do |dependency|
+    @dependencies.values.each do |dependency|
       if dependency.include?(item)
         okay = false
         break

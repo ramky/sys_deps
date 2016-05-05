@@ -6,4 +6,5 @@ require_relative '../lib/file_reader'
 INPUT_PATH = '/Users/riyer/temp/sys_deps/spec/fixtures/input.txt'
 
 dp = DependencyProcessor.new(INPUT_PATH)
-puts dp.process
+dp.process
+dp.print_output
