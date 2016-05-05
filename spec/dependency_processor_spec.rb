@@ -1,6 +1,5 @@
 require 'spec_helper'
 
-FIXTURE_PATH = '/Users/riyer/temp/sys_deps/spec/fixtures/input.txt'
 describe DependencyProcessor do
   describe '#process' do
     it 'processes each line at a time'
@@ -8,7 +7,7 @@ describe DependencyProcessor do
     it "checks the line size doesn't exceed 80"
 
     it 'processes the file' do
-      dp = DependencyProcessor.new(FIXTURE_PATH)
+      dp = DependencyProcessor.new(fixture_path)
 
       dp.process
 
@@ -39,7 +38,7 @@ describe DependencyProcessor do
 
     context 'DEPEND action' do
       it 'sets the dependencies' do
-        dp = DependencyProcessor.new(FIXTURE_PATH)
+        dp = DependencyProcessor.new(fixture_path)
         allow(dp).to receive(:read_file).
           and_return("DEPEND   TELNET TCPIP NETCARD\nDEPEND TCPIP NETCARD")
 
@@ -51,7 +50,7 @@ describe DependencyProcessor do
     end
 
     context 'INSTALL action' do
-      let(:dp) { DependencyProcessor.new(FIXTURE_PATH) }
+      let(:dp) { DependencyProcessor.new(fixture_path) }
 
       it 'sets output for a single item' do
         allow(dp).to receive(:read_file).
