@@ -1,9 +1,8 @@
 require 'spec_helper'
 
-FIXTURE_PATH = '/Users/riyer/temp/sys_deps/spec/fixtures/input.txt'
 
 describe FileReader do
-  let(:reader) { FileReader.new(FIXTURE_PATH)  }
+  let(:reader) { FileReader.new(fixture_path)  }
 
   describe '#read_file' do
     it 'reads the file contents' do

@@ -87,6 +87,7 @@ class DependencyProcessor
 
     unless @installed_items.has_key?(item)
       output_text += "  #{item} is not installed\n"
+      @output << output_text
       return
     end
 

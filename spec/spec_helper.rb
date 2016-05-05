@@ -4,6 +4,8 @@ Dir[File.dirname(__FILE__) + '/../lib/*.rb'].each do |file|
   require File.basename(file, File.extname(file))
 end
 
+require 'support'
+
 require 'rspec'
 
 RSpec.configure do |config|
