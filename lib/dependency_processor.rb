@@ -46,8 +46,9 @@ class DependencyProcessor
     end
   end
 
-  def add_to_output(message)
-    output_text = message + "\n"
+  def add_to_output(message, with_new_line: true)
+    output_text = message
+    output_text += "\n" if with_new_line
     @output << output_text
   end
 
@@ -101,28 +102,35 @@ class DependencyProcessor
     output_text = "REMOVE #{item}\n"
 
     unless @installed_items.has_key?(item)
-      output_text += "  #{item} is not installed\n"
-      @output << output_text
+      output_text += "  #{item} is not installed"
+      add_to_output(output_text)
       return
     end
 
     unless okay_to_remove?(item)
-      output_text += "  #{item} is still needed\n"
+      output_text += "  #{item} is still needed"
+      add_to_output(output_text)
     else
-      output_text += "  Removing #{item}\n"
-      # should refactor to a method
-      if @dependencies.has_key?(item)
-        @dependencies[item].each do |it|
-          if @installed_items[it] == 1
-            output_text += "  Removing #{it}\n"
-          end
-          mark_as_uninstalled(it)
-        end
-        @dependencies.delete(item)
-        mark_as_uninstalled(item)
-      end
+      remove_dependencies(item, output_text)
     end
-    @output << output_text
+  end
+
+  def remove_dependencies(item, output_text)
+    output_text += "  Removing #{item}\n"
+    if @dependencies.has_key?(item)
+      @dependencies[item].each do |it|
+        if @installed_items[it] == 1
+          output_text += "  Removing #{it}\n"
+        end
+
+        mark_as_uninstalled(it)
+      end
+
+      @dependencies.delete(item)
+      mark_as_uninstalled(item)
+    end
+
+    add_to_output(output_text, with_new_line:false)
   end
 
   def list
