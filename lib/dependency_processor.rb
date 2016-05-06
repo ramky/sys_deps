@@ -8,10 +8,6 @@ class DependencyProcessor
     @installed_items = {}
   end
 
-  def set_input_from_file
-    @input = read_file
-  end
-
   def read_file
     reader.read_file
   end
@@ -23,15 +19,10 @@ class DependencyProcessor
     end
   end
 
-  def print_output
-    puts output.join('')
-  end
-
   def process_line(line)
     line = line.strip
     action, *items = line.split(/\s+/)
 
-    # TODO: cleanup with objects - single responsibility principle
     case action
     when 'DEPEND'
       add_dependency(items)
@@ -42,7 +33,7 @@ class DependencyProcessor
     when 'LIST'
       list
     when 'END'
-      add_to_output('END')
+      finish
     end
   end
 
@@ -80,22 +71,6 @@ class DependencyProcessor
     end
     output_text += "  Installing #{item}"
     add_to_output(output_text)
-  end
-
-  def mark_as_installed(item)
-    @installed_items[item] = (
-      @installed_items[item].nil? ? 1 : @installed_items[item] + 1
-    )
-  end
-
-  def mark_as_uninstalled(item)
-    if @installed_items.has_key?(item)
-      if @installed_items[item] > 1
-        @installed_items[item] = @installed_items[item] - 1
-      elsif @installed_items[item] == 1
-        @installed_items.delete(item)
-      end
-    end
   end
 
   def remove(item)
@@ -136,9 +111,14 @@ class DependencyProcessor
   def list
     output_text = "LIST\n  "
     output_text += @installed_items.keys.join("\n  ")
-    output_text += "\n"
-    @output << output_text
+    add_to_output(output_text)
   end
+
+  def finish
+    add_to_output('END')
+  end
+
+  private
 
   def okay_to_remove?(item)
     okay = true
@@ -153,5 +133,29 @@ class DependencyProcessor
 
   def already_installed?(item)
     @installed_items.has_key?(item)
+  end
+
+  def mark_as_installed(item)
+    @installed_items[item] = (
+      @installed_items[item].nil? ? 1 : @installed_items[item] + 1
+    )
+  end
+
+  def mark_as_uninstalled(item)
+    if @installed_items.has_key?(item)
+      if @installed_items[item] > 1
+        @installed_items[item] = @installed_items[item] - 1
+      elsif @installed_items[item] == 1
+        @installed_items.delete(item)
+      end
+    end
+  end
+
+  def set_input_from_file
+    @input = read_file
+  end
+
+  def print_output
+    puts output.join('')
   end
 end

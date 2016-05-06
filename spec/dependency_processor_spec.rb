@@ -103,6 +103,23 @@ describe DependencyProcessor do
       end
     end
 
+    context 'LIST action' do
+      it 'lists the current state of dependencies in the system' do
+        allow(dp).to receive(:read_file).
+          and_return("DEPEND   TELNET TCPIP NETCARD\nDEPEND TCPIP NETCARD\nINSTALL NETCARD\nREMOVE NETCARD\nLIST")
+
+        dp.process
+
+        expect(dp.output).to eq [
+          "DEPEND TELNET TCPIP NETCARD\n",
+          "DEPEND TCPIP NETCARD\n",
+          "INSTALL NETCARD\n  Installing NETCARD\n",
+          "REMOVE NETCARD\n  NETCARD is still needed\n",
+          "LIST\n  NETCARD\n"
+        ]
+      end
+    end
+
     it 'processes the file' do
       dp.process
 
