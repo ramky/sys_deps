@@ -1,14 +1,14 @@
 require 'spec_helper'
 
 describe DependencyProcessor do
+  let(:dp) { DependencyProcessor.new(fixture_path) }
+
   describe '#process' do
     it 'processes each line at a time'
     it 'checks the size of each item'
     it "checks the line size doesn't exceed 80"
 
     it 'processes the file' do
-      dp = DependencyProcessor.new(fixture_path)
-
       dp.process
 
       expect(dp.output).to eq  [
@@ -38,7 +38,6 @@ describe DependencyProcessor do
 
     context 'DEPEND action' do
       it 'sets the dependencies' do
-        dp = DependencyProcessor.new(fixture_path)
         allow(dp).to receive(:read_file).
           and_return("DEPEND   TELNET TCPIP NETCARD\nDEPEND TCPIP NETCARD")
 
@@ -50,8 +49,6 @@ describe DependencyProcessor do
     end
 
     context 'INSTALL action' do
-      let(:dp) { DependencyProcessor.new(fixture_path) }
-
       it 'sets output for a single item' do
         allow(dp).to receive(:read_file).
           and_return("DEPEND   TELNET TCPIP NETCARD\nDEPEND TCPIP NETCARD\nINSTALL NETCARD")
@@ -90,6 +87,15 @@ describe DependencyProcessor do
           "INSTALL NETCARD\n  Installing NETCARD\n",
           "INSTALL NETCARD\n  NETCARD is already installed\n"
         ]
+      end
+    end
+
+    context 'REMOVE action' do
+      it 'removes a single item if there are no dependencies' do
+      end
+      it 'removes a nested structure if there are no dependencies' do
+      end
+      it 'does not remove if there are dependencies' do
       end
     end
   end
