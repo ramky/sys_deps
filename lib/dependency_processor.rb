@@ -21,7 +21,6 @@ class DependencyProcessor
     input.lines.each do |line|
       process_line(line)
     end
-    #require 'pry'; binding.pry
   end
 
   def print_output
