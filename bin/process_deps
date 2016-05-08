@@ -1,7 +1,6 @@
 #!/usr/bin/env ruby
 
 require_relative '../lib/dependency_processor'
-require_relative '../lib/file_reader'
 
 file_path =  File.expand_path File.dirname(__FILE__) + '/../spec/fixtures/input.txt'
 

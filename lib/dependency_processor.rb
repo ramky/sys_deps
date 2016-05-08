@@ -1,3 +1,6 @@
+require_relative './file_reader'
+require_relative './dependency'
+
 class DependencyProcessor
   attr_reader :reader, :input, :output, :dependencies
 
@@ -123,6 +126,10 @@ class DependencyProcessor
     add_to_output('END')
   end
 
+  def print_output
+    puts output.join('')
+  end
+
   private
 
   def validate_line(line)
@@ -153,9 +160,5 @@ class DependencyProcessor
 
   def set_input_from_file
     @input = read_file
-  end
-
-  def print_output
-    puts output.join('')
   end
 end

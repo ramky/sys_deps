@@ -29,7 +29,6 @@ REMOVE BROWSER
 REMOVE TCPIP
 LIST
 END
-
 EOF
     end
   end
