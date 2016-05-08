@@ -1,9 +1,3 @@
-class InvalidItem < Exception
-end
-
-class LineTooLong < Exception
-end
-
 class DependencyProcessor
   attr_reader :reader, :input, :output, :dependencies
 
@@ -11,7 +5,7 @@ class DependencyProcessor
     @reader = FileReader.new(path)
     @dependencies = Dependency.new
     @output = []
-    @installed_items = {}
+    @installed_items = Dependency.new
   end
 
   def read_file
@@ -87,7 +81,7 @@ class DependencyProcessor
   def remove(item)
     output_text = "REMOVE #{item}\n"
 
-    unless @installed_items.has_key?(item)
+    unless @installed_items.item_exists?(item)
       output_text += "  #{item} is not installed"
       add_to_output(output_text)
       return
@@ -140,34 +134,19 @@ class DependencyProcessor
   end
 
   def okay_to_remove?(item)
-    okay = true
-    @dependencies.values.each do |dependency|
-      if dependency.include?(item)
-        okay = false
-        break
-      end
-    end
-    okay
+    @dependencies.does_another_item_depend_on?(item)
   end
 
   def already_installed?(item)
-    @installed_items.has_key?(item)
+    @installed_items.item_exists?(item)
   end
 
   def mark_as_installed(item)
-    @installed_items[item] = (
-      @installed_items[item].nil? ? 1 : @installed_items[item] + 1
-    )
+    @installed_items.mark_as_installed(item)
   end
 
   def mark_as_uninstalled(item)
-    if @installed_items.has_key?(item)
-      if @installed_items[item] > 1
-        @installed_items[item] = @installed_items[item] - 1
-      elsif @installed_items[item] == 1
-        @installed_items.delete(item)
-      end
-    end
+    @installed_items.mark_as_uninstalled(item)
   end
 
   def set_input_from_file
