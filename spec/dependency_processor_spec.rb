@@ -3,7 +3,7 @@ require 'spec_helper'
 describe DependencyProcessor do
   let(:dp) { DependencyProcessor.new(fixture_path) }
 
-  describe '#process' do
+  describe '#process_line' do
     it 'processes each line at a time' do
       expect(dp).to receive(:process_line).twice
       allow(dp).to receive(:read_file).
@@ -11,7 +11,9 @@ describe DependencyProcessor do
 
       dp.process
     end
+  end
 
+  describe '#process' do
     it 'throws an exception if an item is more than 10 characters' do
       allow(dp).to receive(:read_file).
         and_return("DEPEND   TELNET TCPIP A_VERY_LONG_NETCARD")
@@ -26,8 +28,23 @@ describe DependencyProcessor do
       expect{ dp.process }.to raise_error(LineTooLong)
     end
 
-    it 'item name is case sensitive'
-    it 'validates actions'
+    it 'considers case sensitive items' do
+      allow(dp).to receive(:read_file).
+        and_return("DEPEND   TELNET NETCARD\nDEPEND telnet NETCARD")
+
+      dp.process
+
+      expect(dp.dependencies.item_exists?('TELNET')).to be_truthy
+      expect(dp.dependencies.item_exists?('telnet')).to be_truthy
+      expect(dp.dependencies.item_count).to eq 2
+    end
+
+    it 'validates actions' do
+      allow(dp).to receive(:read_file).
+        and_return("SOMETHING   TELNET TCPIP NETCARD\nDEPEND TCPIP NETCARD")
+
+      expect{ dp.process }.to raise_error(InvalidAction)
+    end
 
     context 'DEPEND action' do
       it 'sets the dependencies' do
@@ -141,7 +158,7 @@ describe DependencyProcessor do
       end
     end
 
-    it 'processes the file' do
+    it 'processes an input file' do
       dp.process
 
       expect(dp.output).to eq  [

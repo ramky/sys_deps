@@ -1,5 +1,8 @@
 require 'delegate'
 
+# Bevar subclassing Ruby core classes -
+# http://words.steveklabnik.com/beware-subclassing-ruby-core-classes
+
 class Dependency < SimpleDelegator
   def initialize
     super({})
@@ -36,6 +39,10 @@ class Dependency < SimpleDelegator
 
   def item_exists?(item)
     self.has_key?(item)
+  end
+
+  def item_count
+    self.keys.count
   end
 
   def does_another_item_depend_on?(item)

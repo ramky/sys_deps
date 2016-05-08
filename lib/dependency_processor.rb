@@ -41,6 +41,8 @@ class DependencyProcessor
       list
     when 'END'
       finish
+    else
+      raise InvalidAction
     end
   end
 
