@@ -32,6 +32,10 @@ class DependencyProcessor
     action, *items = line.split(/\s+/)
     validate(action, items)
 
+    take_action(action, items)
+  end
+
+  def take_action(action, items)
     case action
     when 'DEPEND'
       add_dependency(items)
@@ -72,13 +76,10 @@ class DependencyProcessor
   end
 
   def install_dependencies(item, output_text)
-    #if @dependencies.has_key?(item)
-        #@dependencies[item].each do |it|
-        @dependencies.get_deps_for_item(item).each do |it|
-          output_text += "  Installing #{it}\n" unless already_installed?(it)
-          mark_as_installed(it)
-        end
-    #end
+    @dependencies.get_deps_for_item(item).each do |it|
+      output_text += "  Installing #{it}\n" unless already_installed?(it)
+      mark_as_installed(it)
+    end
     output_text += "  Installing #{item}"
     add_to_output(output_text)
   end
@@ -102,14 +103,12 @@ class DependencyProcessor
 
   def remove_dependencies(item, output_text)
     output_text += "  Removing #{item}\n"
-    if @dependencies.has_key?(item)
-      @dependencies[item].each do |it|
-        if @installed_items[it] == 1
-          output_text += "  Removing #{it}\n"
-        end
-
-        mark_as_uninstalled(it)
+    @dependencies.get_deps_for_item(item).each do |it|
+      if @installed_items[it] == 1
+        output_text += "  Removing #{it}\n"
       end
+
+      mark_as_uninstalled(it)
 
       @dependencies.delete(item)
       mark_as_uninstalled(item)

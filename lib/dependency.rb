@@ -9,16 +9,16 @@ class Dependency < SimpleDelegator
     self[item] = deps
   end
 
-  def item_exists?(item)
-    self.has_key?(item)
-  end
-
   def get_deps_for_item(item)
     if item_exists?(item)
       return self[item]
     else
       return []
     end
+  end
+
+  def item_exists?(item)
+    self.has_key?(item)
   end
 end
 
