@@ -1,9 +1,15 @@
+class InvalidItem < Exception
+end
+
+class LineTooLong < Exception
+end
+
 class DependencyProcessor
   attr_reader :reader, :input, :output, :dependencies
 
   def initialize(path)
     @reader = FileReader.new(path)
-    @dependencies = {}
+    @dependencies = Dependency.new
     @output = []
     @installed_items = {}
   end
@@ -21,7 +27,10 @@ class DependencyProcessor
 
   def process_line(line)
     line = line.strip
+    validate_line(line)
+
     action, *items = line.split(/\s+/)
+    validate(action, items)
 
     case action
     when 'DEPEND'
@@ -45,7 +54,7 @@ class DependencyProcessor
 
   def add_dependency(items)
     depends_on = items.slice(1, items.length)
-    @dependencies[items.first] = depends_on
+    @dependencies.add(items.first, depends_on)
     add_to_output('DEPEND ' + items.join(' '))
   end
 
@@ -63,12 +72,13 @@ class DependencyProcessor
   end
 
   def install_dependencies(item, output_text)
-    if @dependencies.has_key?(item)
-        @dependencies[item].each do |it|
+    #if @dependencies.has_key?(item)
+        #@dependencies[item].each do |it|
+        @dependencies.get_deps_for_item(item).each do |it|
           output_text += "  Installing #{it}\n" unless already_installed?(it)
           mark_as_installed(it)
         end
-    end
+    #end
     output_text += "  Installing #{item}"
     add_to_output(output_text)
   end
@@ -119,6 +129,16 @@ class DependencyProcessor
   end
 
   private
+
+  def validate_line(line)
+    raise LineTooLong if line.size > 80
+  end
+
+  def validate(action, items)
+    items.each do |item|
+      raise InvalidItem if item.size > 10
+    end
+  end
 
   def okay_to_remove?(item)
     okay = true

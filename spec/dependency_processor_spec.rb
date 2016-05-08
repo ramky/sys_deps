@@ -4,9 +4,30 @@ describe DependencyProcessor do
   let(:dp) { DependencyProcessor.new(fixture_path) }
 
   describe '#process' do
-    it 'processes each line at a time'
-    it 'checks the size of each item'
-    it "checks the line size doesn't exceed 80"
+    it 'processes each line at a time' do
+      expect(dp).to receive(:process_line).twice
+      allow(dp).to receive(:read_file).
+        and_return("DEPEND   TELNET TCPIP NETCARD\nDEPEND TCPIP NETCARD")
+
+      dp.process
+    end
+
+    it 'throws an exception if an item is more than 10 characters' do
+      allow(dp).to receive(:read_file).
+        and_return("DEPEND   TELNET TCPIP A_VERY_LONG_NETCARD")
+
+      expect{ dp.process }.to raise_error(InvalidItem)
+    end
+
+    it 'throws an exception if the line size is more than 80' do
+      allow(dp).to receive(:read_file).
+        and_return("Lorem ipsum dolor sit amet, consectetur adipiscing elit. In cursus ipsum odio, at sodales nisl tempor id. Curabitur elementum vehicula egestas. Curabitur purus risus, suscipit sed convallis quis, interdum a lectus.\nDuis tincidunt eros at nisi vulputate, ac aliquet lectus euismod. Pellentesque at molestie est. Aenean semper consequat nibh eget tincidunt. Pellentesque varius justo ac pretium tempor.")
+
+      expect{ dp.process }.to raise_error(LineTooLong)
+    end
+
+    it 'item name is case sensitive'
+    it 'validates actions'
 
     context 'DEPEND action' do
       it 'sets the dependencies' do
