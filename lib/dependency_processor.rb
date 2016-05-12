@@ -34,16 +34,11 @@ class DependencyProcessor
 
   def take_action(action, items)
     case action
-    when 'DEPEND'
-      add_dependency(items)
-    when 'INSTALL'
-      install(items.first)
-    when 'REMOVE'
-      remove(items.first)
-    when 'LIST'
-      list
-    when 'END'
-      finish
+    when 'DEPEND'  then add_dependency(items)
+    when 'INSTALL' then install(items.first)
+    when 'REMOVE'  then remove(items.first)
+    when 'LIST'    then list
+    when 'END'     then finish
     else
       raise InvalidAction
     end
